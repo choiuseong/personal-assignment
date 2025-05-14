@@ -1,0 +1,28 @@
+sequenceDiagram
+    participant User
+    participant BankingApp
+    participant AuthServer
+    participant OTPService
+    participant BankServer
+    participant LogService
+
+    User->>BankingApp: 송금 요청 (수취인, 금액 입력)
+    BankingApp->>AuthServer: 사용자 인증 요청
+    AuthServer-->>BankingApp: 인증 성공
+
+    BankingApp->>OTPService: OTP 요청
+    OTPService-->>User: OTP 전송
+    User->>BankingApp: OTP 입력
+    BankingApp->>OTPService: OTP 검증
+    OTPService-->>BankingApp: OTP 검증 성공
+
+    BankingApp->>BankServer: 송금 정보 전송
+    alt 잔액 부족
+        BankServer-->>BankingApp: 송금 실패 (잔액 부족)
+        BankingApp-->>User: 송금 실패 안내
+    else 송금 성공
+        BankServer-->>BankingApp: 송금 처리 성공
+        BankingApp->>LogService: 송금 로그 기록
+        LogService-->>BankingApp: 기록 완료
+        BankingApp-->>User: 송금 완료 및 영수증 발급
+    end
